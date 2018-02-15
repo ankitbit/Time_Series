@@ -1,0 +1,226 @@
+---
+title: 'Session 2: GDPUSAvar ARMA Modelling'
+Date: 15/02/2018
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+Author: JAS + LA-extension
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Los datos provienen de la web oficial (http://www.bea.gov/national/index.htm) y corresponden a la variación porcentual respecto al periodo anterior del producto interior bruto de los Estados Unidos, basado en precios encadenados, desde el primer trimestre de 1990 hasta el último de 2017 (últimos 28 años). La serie está ajustada estacionalmente.
+
+###Plot the time series GDPUSAvar
+```{r}
+(serie=ts((read.table("gdpUSAvar.dat",header=F)),start=1990,freq=4))
+plot(serie)
+abline(v=1990:2018,col=4,lty=3)
+abline(h=0)
+#abline(h=mean(serie),col=2)
+```
+1990: ?? 2008-2010: ??
+
+## I. Model Identification
+### Ia. Tranforming series to stationarity: 
+
+####Is Variance constant?
+```{r}
+boxplot(serie~floor(time(serie)))
+
+#LA
+par(mfrow=c(1,2))
+m=apply(matrix(serie,ncol=28),2,mean)
+v=apply(matrix(serie,ncol=28),2,var)
+plot(v~m,main="Mean-Variance plot")
+boxplot(serie)
+#abline(lm(v~m))
+#summary(lm(v~m)): be aware of potential outliers
+par(mfrow=c(1,1))
+```
+
+#####The varianza seemingly constant!  
+
+####Is seasonality present? Nop, GDPUSAvar series has been Seasonally adjusted
+
+####Is the mean constant? 
+Plot again the whole time series
+```{r}
+plot(serie)
+abline(h=0)
+abline(h=mean(serie),col=2)
+```
+
+#####Constant mean, but different from zero!!!
+
+#### Is an extra differentiation needed? NOP! Observe that the mean becomes zero but the variance increases...
+
+```{r}
+d1serie=diff(serie)
+plot(d1serie)
+abline(h=0)
+```
+
+```{r}
+var(serie)
+var(d1serie)
+```
+
+##### In this case, the given series GDPUSAvar shows no seasonality, has constant mean and variance. Its covariance structure does not depends on the time-origin. Notice that the ACF decays fast towards zero.
+```{r}
+acf(serie,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,3)))
+```
+
+Thus, the GDPUSAvar time series is already stationary! Proceed to identify possible values of p and q of the ARMA(p,q) model by looking to P(ACF)
+
+### Ib. Selection of plausible models to fit: propose >=2 models (principle of parsimony!)
+```{r}
+par(mfrow=c(1,2))
+acf(serie,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,3)))
+pacf(serie,ylim=c(-1,1),lag.max=60,col=c(rep(1,3),2))
+par(mfrow=c(1,1))
+```
+
+Three models proposed: AR(2), MA(2), ARMA(1,1)
+
+### 'Load' the function 'validation': used later
+```{r}
+#################Validation#################################
+validation=function(model,dades){
+  s=frequency(get(model$series))
+  resid=model$residuals
+  par(mfrow=c(2,2),mar=c(3,3,3,3))
+  #Residuals plot
+  plot(resid,main="Residuals")
+  abline(h=0)
+  abline(h=c(-3*sd(resid),3*sd(resid)),lty=3,col=4)
+  #Square Root of absolute values of residuals (Homocedasticity)
+  scatter.smooth(sqrt(abs(resid)),main="Square Root of Absolute residuals",
+                 lpars=list(col=2))
+  
+  #Normal plot of residuals
+  qqnorm(resid)
+  qqline(resid,col=2,lwd=2)
+  
+  ##Histogram of residuals with normal curve
+  hist(resid,breaks=20,freq=F)
+  curve(dnorm(x,mean=mean(resid),sd=sd(resid)),col=2,add=T)
+  
+  
+  #ACF & PACF of residuals
+  par(mfrow=c(1,2))
+  acf(resid,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,s-1)),lwd=1)
+  pacf(resid,ylim=c(-1,1),lag.max=60,col=c(rep(1,s-1),2),lwd=1)
+  par(mfrow=c(1,1))
+  
+  #ACF & PACF of square residuals 
+  par(mfrow=c(1,2))
+  acf(resid^2,ylim=c(-1,1),lag.max=60,col=c(2,rep(1,s-1)),lwd=1)
+  pacf(resid^2,ylim=c(-1,1),lag.max=60,col=c(rep(1,s-1),2),lwd=1)
+  par(mfrow=c(1,1))
+    
+  #Ljung-Box p-values
+  par(mar=c(2,2,1,1))
+  tsdiag(model,gof.lag=7*s)
+  cat("\n--------------------------------------------------------------------\n")
+  print(model)
+  
+  #Stationary and Invertible
+  cat("\nModul of AR Characteristic polynomial Roots: ", 
+      Mod(polyroot(c(1,-model$model$phi))),"\n")
+  cat("\nModul of MA Characteristic polynomial Roots: ",
+      Mod(polyroot(c(1,model$model$theta))),"\n")
+  
+  #Model expressed as an MA infinity (psi-weights)
+  psis=ARMAtoMA(ar=model$model$phi,ma=model$model$theta,lag.max=36)
+  names(psis)=paste("psi",1:36)
+  cat("\nPsi-weights (MA(inf))\n")
+  cat("\n--------------------\n")
+  print(psis[1:20])
+  
+  #Model expressed as an AR infinity (pi-weights)
+  pis=-ARMAtoMA(ar=-model$model$theta,ma=-model$model$phi,lag.max=36)
+  names(pis)=paste("pi",1:36)
+  cat("\nPi-weights (AR(inf))\n")
+  cat("\n--------------------\n")
+  print(pis[1:20])
+  
+  ##Shapiro-Wilks Normality test
+  print(shapiro.test(resid(mod)))
+  
+  #Sample ACF vs. Teoric ACF
+  par(mfrow=c(2,2),mar=c(3,3,3,3))
+  acf(dades, ylim=c(-1,1) ,lag.max=36,main="Sample ACF")
+  
+  plot(ARMAacf(model$model$phi,model$model$theta,lag.max=36),ylim=c(-1,1), 
+       type="h",xlab="Lag",  ylab="", main="ACF Teoric")
+  abline(h=0)
+  
+  #Sample PACF vs. Teoric PACF
+  pacf(dades, ylim=c(-1,1) ,lag.max=36,main="Sample PACF")
+  
+  plot(ARMAacf(model$model$phi,model$model$theta,lag.max=36, pacf=T),ylim=c(-1,1),
+       type="h", xlab="Lag", ylab="", main="PACF Teoric")
+  abline(h=0)
+  par(mfrow=c(1,1))
+}
+################# Fi Validació #################################
+```
+
+##II. Estimation Model 1: AR(2) process 
+```{r}
+(mod=arima(serie,order=c(2,0,0) )) #by default ,include.mean=T
+```
+###Check significance of estimated parameters
+Remember: ML estimators are asymptotically normally distributed. Use this result to check significance of the 3 estimated parameters. 
+```{r}
+cat("Z values:",fill=TRUE)
+abs(mod$coef/sqrt(diag(mod$var.coef)))
+```
+All significant since |coeff/SE_coeff| >2 or check 95%CI
+
+Thus the expression of the AR(2) fitted model is: ...
+
+###Check for stationarity of the fitted model 
+Write the characteristic polynomial of the fitted AR(2) model: compute module/roots (must be outside unit circle)
+
+Recall: AR(p) models are known to be invertible, but stationarity must be checked.This is done inside the validation function...
+
+##III. Validation Model 1: AR(2) process 
+AR(2) process validation: several diagnostic tools used
+#library(moments)
+```{r}
+dades=serie
+model=mod
+validation(model,dades)
+```
+
+###Conclusions: The asumptions are reasonably fulfilled, but be aware of possible outliers (study them!)
+###############################################################################
+
+###Model 2: MA(2) 
+```{r}
+(mod=arima(serie,order=c(0,0,2)))
+```
+
+```{r}
+dades=serie
+model=mod
+validation(model,dades)
+```
+###############################################################################
+###Model 3: ARMA(1,1) 
+```{r}
+(mod=arima(serie,order=c(1,0,1)))
+```
+
+```{r}
+dades=serie
+model=mod
+validation(model,dades)
+```
+
+
