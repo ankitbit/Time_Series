@@ -1,0 +1,21 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+## AirBCN
+
+Data come from the website of the Ministry of Public Works of Spain (www.fomento.es) in paragraph Statistical Information / Bulletin On-line / Civil Aviation / 4.2 Traffic by airports. Barcelona
+and correspond to the number of monthly passengers (in thousands) of international air flights at El Prat between January 1990 and December 2017.
+
+```{r}
+serie=window(ts(read.table("airbcn.dat")[,1]/1000,start=1990,freq=12),start=1990)
+round(serie,1)
+```
+
+```{r}
+plot(serie,main="Miles de pasajeros de lineas internacionales en el aeropuerto del Prat",type="o",ylim=c(0,4100))
+abline(v=1990:2018,col=4,lty=3)
+#text(1990:2017+0.5,3950,1990:2017,cex=0.8)
+```

@@ -1,0 +1,14 @@
+##PIBsp
+
+Los datos provienen de la web del Instituto Nacional de Estadística de España (www.ine.es) en el apartado Economia / Cuentas Económicas / Contabilidad Nacional Trimestral de España. Base 2010 / CNTR Base 2010. Series desde el trimestre 1/1995 hasta el último trimestre publicado / PIB pm. Oferta (Indices de volumen encadenados) / Datos corregidos de efectos estacionales y de calendario y corresponden al los datos trimestrales del índice de Producto Interior Bruto en España, desde el primer trimestre de 1995 hasta el tercero de 2017. La fuente de información es el Banco de España, a través del Boletín Mensual de Estadística del INE.
+
+```{r}
+serie=ts((read.table("pibsp.dat")),start=1995,freq=4)
+print(round(serie,2))
+```
+
+```{r}
+plot(serie,main="PIB España. Oferta (Indice de volumenes encadenados)")
+abline(h=0)
+abline(v=1995:2018,col=4,lty=3)
+```

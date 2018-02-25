@@ -1,0 +1,15 @@
+##GDPUSA
+
+Los datos provienen de la web oficial (http://www.bea.gov/national/index.htm) y corresponden al producto interior bruto de los Estados Unidos, desde el primer trimestre de 1947 hasta el último de 2017. 
+
+
+```{r}
+serie=ts((read.table("gdpusa.dat")),start=1947,freq=4)
+print(round(serie,2))
+```
+
+```{r}
+plot(serie,main="Gross Domestic Product USA")
+abline(h=0)
+abline(v=1947:2018,col=4,lty=3)
+```

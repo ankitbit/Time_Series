@@ -1,0 +1,8 @@
+## Nuevos casos de tuberculosis respiratoria en España
+## 1cs/1980 a 3cs/2008
+
+```{r}
+serie=ts(read.table("tuberc.dat"),start=1980,freq=13)
+plot(serie,main="Casos de Tuberculosis declarados en España por cuatrisemanas")
+abline(v=1980:2009,lty=3,col=4)
+```
