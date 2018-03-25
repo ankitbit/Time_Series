@@ -4,6 +4,7 @@
 
 ## Tutorials-
 * [STAT 510	(Applied Time Series Analysis)](https://onlinecourses.science.psu.edu/stat510/node/47)
+* [MATH6139: Time Series](http://www.maths.qmul.ac.uk/~bb/TimeSeries/MAS328.html)
 * [How To Identify Patterns in Time Series Data: Time Series Analysis](http://www.statsoft.com/Textbook/Time-Series-Analysis)
 * [Regression with Time Series Data](https://www.otexts.org/fpp/4/8)
 
