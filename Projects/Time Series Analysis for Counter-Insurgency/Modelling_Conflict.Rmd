@@ -1,0 +1,102 @@
+---
+title: "Predicting Insurgency Trends- Conflict Time Series"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+
+
+```{r}
+library(readr)
+fatalities <- read_csv("fatalities.csv", col_names = FALSE)
+fatalities <- ts(fatalities, start = c(2002,1), end=c(2017,12),frequency=12)
+plot.ts(fatalities, ylab="Fatalaties", col="orange", lwd=2,
+        main="Death Count due to Insurgency in Jammu & Kashmir")
+```
+
+
+```{R}
+plot(decompose(fatalities))
+```
+
+```{R}
+log_fatalities <- log(fatalities)
+par(mfrow=c(1,2))
+boxplot(fatalities~floor(time(fatalities)), col= "skyblue",
+        main = "Original Series")
+boxplot(log_fatalities~floor(time(log_fatalities)), col= "tomato",
+        main="Log-transfomred Series")
+
+```
+
+```{R}
+plot.ts(log_fatalities, ylab="Fatalaties", col="royalblue", lwd=2,
+        main="Death Count due to Insurgency in Jammu & Kashmir")
+```
+
+
+```{R}
+d1log_fatalities <- diff(log_fatalities,1)
+plot.ts(d1log_fatalities, ylab="Fatalaties", col="orange", lwd=2,
+        main="Death Count due to Insurgency in Jammu & Kashmir")
+abline(h=0, lty=2, col="darkgreen", lwd=2)
+```
+
+```{R}
+par(mfrow=c(1,2))
+acf(d1log_fatalities,ylim=c(-1,1),col=c(2,rep(1,11)),lwd=1,lag.max=84)
+pacf(d1log_fatalities,ylim=c(-1,1),col=c(rep(1,11),2),lwd=1,lag.max=84)
+```
+
+```{R}
+# fitting the ARIMA(1,0,1)
+mod <- arima(d1log_fatalities, order = c(8,0,8), seasonal=list(order=c(0,0,0),period=12))
+
+```
+
+
+
+```{R}
+##### Previsions a llarg termini amb el model complet ######
+ultim <- c(2016,12)
+pred=predict(mod,n.ahead=36)
+pr<-ts(c(tail(d1log_fatalities,1),pred$pred),start=ultim+c(1,0),freq=12)
+se<-ts(c(0,pred$se),start=ultim+c(1,0),freq=12)
+
+#Intervals
+tl1<-ts(exp(pr-1.96*se),start=ultim+c(1,0),freq=12)
+tu1<-ts(exp(pr+1.96*se),start=ultim+c(1,0),freq=12)
+pr1<-ts(exp(pr),start=ultim+c(1,0),freq=12)
+
+ts.plot(fatalities,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(ultim[1]-2,ultim[1]+3),type="o",main="Model ARIMA(1,0,1)", ylim = c(0,100))
+abline(v=(ultim[1]-2):(ultim[1]+3),lty=3,col=4)
+```
+
+```{R}
+
+```
+
+```{R forecasting using holtwinters}
+#options(warn = 0)
+#install.packages("forecast")
+library(forecast)
+library(TTR)
+insurgency_fit <- HoltWinters(log_fatalities)
+plot(insurgency_fit)
+
+insurgency_forecasts <- forecast:::forecast.HoltWinters(insurgency_fit, h=36)
+forecast:::plot.forecast(insurgency_forecasts, col = "tomato", lwd=2, 
+                         main = "Insurgency Forecast for 2018-20", fcol = "navyblue",
+                         xlab = expression("Machine Intelligence Unit (Project Victor Sierra)"))
+```
+
+
+```{R}
+print(exp(insurgency_forecasts$mean))
+```
+
+
+
