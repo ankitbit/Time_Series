@@ -1,4 +1,8 @@
 # Time Series
+
+## Introduction
+Time series forecasting is performed in nearly every organization that works with quantifiable data. Retail stores forecast sales. Energy companies forecast reserves, production, demand, and prices. Educational institutions forecast enrollment. Goverments forecast tax receipts and spending. International financial organizations forecast inflation and economic activity. The list is long but the point is short - forecasting is a fundamental analytic process in every organization. The purpose of this tutorial is to get you started doing some fundamental time series exploration and visualization.
+
 ## Datasets-
 * [Time Series Data Library](https://datamarket.com/data/list/?q=provider:tsdl): Maintained by [Hyndman, R.J.](https://robjhyndman.com/TSDL/)
 
