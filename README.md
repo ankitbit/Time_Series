@@ -12,6 +12,9 @@ Time series forecasting is performed in nearly every organization that works wit
 * [How To Identify Patterns in Time Series Data: Time Series Analysis](http://www.statsoft.com/Textbook/Time-Series-Analysis)
 * [Regression with Time Series Data](https://www.otexts.org/fpp/4/8)
 
+- [Principles of Econometrics with R](https://bookdown.org/ccolonescu/RPoE4/)
+- [AMATH 546/ECON 589:  Financial Econometrics and Quantitative Risk Management](https://faculty.washington.edu/ezivot/econ589/589syllabus.htm)
+
 ## References-
 * [A Little Book of R for Time Series](http://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/index.html)
 * [Free public datasets for starting a data science project](https://www.springboard.com/blog/free-public-data-sets-data-science-project/)
