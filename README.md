@@ -16,6 +16,7 @@ Time series forecasting is performed in nearly every organization that works wit
 - [AMATH 546/ECON 589:  Financial Econometrics and Quantitative Risk Management](https://faculty.washington.edu/ezivot/econ589/589syllabus.htm)
 
 ## References-
+* [Applied Time Series Analysis](https://nwfsc-timeseries.github.io/atsa-labs/)
 * [A Little Book of R for Time Series](http://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/index.html)
 * [Free public datasets for starting a data science project](https://www.springboard.com/blog/free-public-data-sets-data-science-project/)
 * [Dealing with Multivariate Time Series datasets]()
